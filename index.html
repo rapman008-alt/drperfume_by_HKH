@@ -23,8 +23,6 @@
 <div class="container">
 <h2>تثبيت طلب عطور - متعدد المنتجات</h2>
 
-<!-- ملاحظة: لا نظهر التاريخ في واجهة الإدخال؛ يظهر فقط في الوصل عند الإنشاء -->
-
 <label>صورة المنتج</label>
 <input type="file" id="productImage" accept="image/*">
 <img id="preview" style="display:none; max-width:100%; height:auto;" />
@@ -44,11 +42,11 @@
 <label>العنوان *</label>
 <input id="address" placeholder="عنوان الزبون">
 
-<label>مبلغ التوصيل * <span class="smallNote">(رقم من خانة واحدة 0-9)</span></label>
-<input id="delivery" type="number" min="0" max="9" step="1" placeholder="مثال: 3">
+<label>مبلغ التوصيل * <span class="smallNote">(يمكن إدخال أرقام عربية أو إنجليزية)</span></label>
+<input id="delivery" placeholder="مثال: 3 أو ٣">
 
 <label>سعر الصرف *</label>
-<input id="exchange" type="number" step="0.001" placeholder="مثال: 1.42">
+<input id="exchange" placeholder="مثال: 1.42 أو ١.٤٢">
 
 <label>ملاحظات</label>
 <textarea id="notes" rows="3" placeholder="ملاحظات إضافية (اختياري)" style="width:100%; margin-top:5px;"></textarea>
@@ -61,6 +59,18 @@
 </div>
 
 <script>
+// دالة تحويل الأرقام العربية إلى إنجليزية
+function convertArabicNumbers(input) {
+  if(!input) return input;
+  const arabicNumbers = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  const englishNumbers = ['0','1','2','3','4','5','6','7','8','9'];
+  let output = input;
+  for (let i = 0; i < arabicNumbers.length; i++) {
+    output = output.replace(new RegExp(arabicNumbers[i], 'g'), englishNumbers[i]);
+  }
+  return output;
+}
+
 // مرجع عناصر
 const preview = document.getElementById('preview');
 const productImage = document.getElementById('productImage');
@@ -87,15 +97,14 @@ function addProduct(){
   <label>النوع *</label>
   <input class="type" placeholder="نوع المنتج">
   <label>العدد *</label>
-  <input class="qty" type="number" min="1" placeholder="عدد القطع">
+  <input class="qty" placeholder="عدد القطع">
   <label>السعر ($) *</label>
-  <input class="price" type="number" step="0.01" placeholder="سعر القطعة بالدولار">
+  <input class="price" placeholder="سعر القطعة بالدولار">
   <label>التحميل ($)</label>
-  <input class="load" type="number" step="0.01" value="4">
+  <input class="load" placeholder="التحميل لكل قطعة" value="4">
   <button type="button" onclick="this.parentElement.remove()" style="margin-top:8px;">حذف المنتج</button>
  `;
  container.appendChild(div);
- // اجعل التركيز على أول حقل جديد لتسهيل الإدخال
  const inputs = div.getElementsByTagName('input');
  if(inputs.length) inputs[0].focus();
 }
@@ -113,8 +122,8 @@ function generateOrder(){
  const phone1 = document.getElementById('phone1').value.trim();
  const phone2 = document.getElementById('phone2').value.trim();
  const address = document.getElementById('address').value.trim();
- const delivery = document.getElementById('delivery').value.trim();
- const exchange = document.getElementById('exchange').value.trim();
+ const delivery = convertArabicNumbers(document.getElementById('delivery').value.trim());
+ const exchange = convertArabicNumbers(document.getElementById('exchange').value.trim());
  const notes = document.getElementById('notes').value.trim();
 
  // تحقق الحقول الأساسية
@@ -124,37 +133,31 @@ function generateOrder(){
  }
  if(phone1.length !== 11){ alert("رقم الهاتف الأول يجب أن يكون 11 رقم"); return; }
  if(phone2 && phone2.length !== 11){ alert("رقم الهاتف الثاني يجب أن يكون 11 رقم"); return; }
- // تحقق توصيل خانة واحدة
  if(!/^[0-9]$/.test(delivery)){
    alert("مبلغ التوصيل يجب أن يكون رقم من خانة واحدة فقط (0-9)");
    return;
  }
- // تحقق سعر الصرف صالح
  const exchangeNum = parseFloat(exchange);
  if(isNaN(exchangeNum) || exchangeNum <= 0){
    alert("سعر الصرف غير صالح");
    return;
  }
 
- // احسب وقت التثبيت الآن (وقت إنشاء الطلب)
  const now = new Date();
  const date = now.toLocaleDateString('ar-IQ');
  const time = now.toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit', hour12: true });
- const datetimeFormatted = `${date}  -  ${time}`; // مثل: ٢/١٢/٢٠٢٥  -  ٢:٥٥ م
+ const datetimeFormatted = `${date}  -  ${time}`;
 
- // الحسابات لكل المنتجات
  let totalPriceDollar = 0;
  let html = "";
  if(preview.src && preview.src.length) html += `<img src='${preview.src}'>`;
-
- // أضف تاريخ/وقت التثبيت أولاً في الوصل
  html += `<p><b>تاريخ ووقت الطلب:</b> ${datetimeFormatted}</p>`;
 
  for(let i=0;i<typeInputs.length;i++){
   const type = (typeInputs[i].value || "").trim();
-  const qty = parseFloat(qtyInputs[i].value);
-  const price = parseFloat(priceInputs[i].value);
-  const load = parseFloat(loadInputs[i].value);
+  const qty = parseFloat(convertArabicNumbers(qtyInputs[i].value));
+  const price = parseFloat(convertArabicNumbers(priceInputs[i].value));
+  const load = parseFloat(convertArabicNumbers(loadInputs[i].value));
 
   if(!type || isNaN(qty) || qty <= 0 || isNaN(price) || price < 0 || isNaN(load) || load < 0){
     alert("يجب ملء جميع الحقول لكل منتج بقيم صحيحة (العدد أكبر من 0، والسعر/التحميل أرقام صحيحة)");
@@ -185,10 +188,9 @@ function generateOrder(){
  document.getElementById('output').innerHTML = html;
  document.getElementById('output').style.display = "block";
  document.getElementById('copyBtn').style.display = "inline-block";
- // عند كل إنشاء يمكنك -اختياريًا- تحديث التاريخ مرة أخرى أو تركها كما سجلت
 }
 
-// دالة بسيطة للهروب من نصوص HTML عند العرض
+// الهروب من HTML
 function escapeHtml(text){
   if(!text) return "";
   return text
