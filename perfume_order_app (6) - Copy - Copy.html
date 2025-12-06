@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تثبيت طلب عطور - متعدد المنتجات</title>
+<style>
+ body { font-family: Arial; background:#f5f5f5; padding:20px; }
+ .container { max-width:700px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+ label { font-weight:bold; margin-top:10px; display:block; }
+ input, select, textarea { width:100%; padding:10px; margin-top:5px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box; }
+ .btn { background:#444; color:#fff; padding:12px; margin-top:15px; width:100%; border:none; border-radius:5px; cursor:pointer; font-size:16px; }
+ .btn:hover { background:#333; }
+ .output { background:#eef; padding:15px; border-radius:10px; margin-top:20px; }
+ .output img { max-width:100%; margin-top:10px; border-radius:5px; }
+ .output p { font-size:16px; margin:5px 0; }
+ .copyBtn { background:#0a84ff; margin-top:10px; color:#fff; border:none; padding:10px; border-radius:5px; cursor:pointer; }
+ .productRow { border:1px solid #ccc; padding:10px; margin-top:10px; border-radius:5px; }
+ .smallNote { font-size:13px; color:#666; }
+</style>
+</head>
+<body>
+<div class="container">
+<h2>تثبيت طلب عطور - متعدد المنتجات</h2>
+
+<!-- ملاحظة: لا نظهر التاريخ في واجهة الإدخال؛ يظهر فقط في الوصل عند الإنشاء -->
+
+<label>صورة المنتج</label>
+<input type="file" id="productImage" accept="image/*">
+<img id="preview" style="display:none; max-width:100%; height:auto;" />
+
+<label>الاسم</label>
+<input id="customerName" placeholder="اسم الزبون (اختياري)">
+
+<div id="productsContainer"></div>
+<button class="btn" onclick="addProduct()">إضافة منتج</button>
+
+<label>هاتف 1 *</label>
+<input id="phone1" placeholder="رقم الهاتف 11 رقم" maxlength="11">
+
+<label>هاتف 2</label>
+<input id="phone2" placeholder="رقم إضافي (اختياري)" maxlength="11">
+
+<label>العنوان *</label>
+<input id="address" placeholder="عنوان الزبون">
+
+<label>مبلغ التوصيل * <span class="smallNote">(رقم من خانة واحدة 0-9)</span></label>
+<input id="delivery" type="number" min="0" max="9" step="1" placeholder="مثال: 3">
+
+<label>سعر الصرف *</label>
+<input id="exchange" type="number" step="0.001" placeholder="مثال: 1.42">
+
+<label>ملاحظات</label>
+<textarea id="notes" rows="3" placeholder="ملاحظات إضافية (اختياري)" style="width:100%; margin-top:5px;"></textarea>
+
+<button class="btn" onclick="generateOrder()">إنشاء نسخة الزبون</button>
+
+<div id="output" class="output" style="display:none;"></div>
+<button id="copyBtn" class="copyBtn" style="display:none;" onclick="copyToClipboard()">نسخ الطلب</button>
+
+</div>
+
+<script>
+// مرجع عناصر
+const preview = document.getElementById('preview');
+const productImage = document.getElementById('productImage');
+
+// Preview Image
+productImage.onchange = function(){
+ const file = this.files[0];
+ if(file){
+  const reader = new FileReader();
+  reader.onload = function(e){ preview.src = e.target.result; preview.style.display = "block"; preview.style.maxWidth = '100%'; preview.style.height = 'auto'; }
+  reader.readAsDataURL(file);
+ } else {
+  preview.style.display = "none";
+  preview.src = "";
+ }
+}
+
+// إضافة منتج
+function addProduct(){
+ const container = document.getElementById('productsContainer');
+ const div = document.createElement('div');
+ div.className = 'productRow';
+ div.innerHTML = `
+  <label>النوع *</label>
+  <input class="type" placeholder="نوع المنتج">
+  <label>العدد *</label>
+  <input class="qty" type="number" min="1" placeholder="عدد القطع">
+  <label>السعر ($) *</label>
+  <input class="price" type="number" step="0.01" placeholder="سعر القطعة بالدولار">
+  <label>التحميل ($)</label>
+  <input class="load" type="number" step="0.01" value="4">
+  <button type="button" onclick="this.parentElement.remove()" style="margin-top:8px;">حذف المنتج</button>
+ `;
+ container.appendChild(div);
+ // اجعل التركيز على أول حقل جديد لتسهيل الإدخال
+ const inputs = div.getElementsByTagName('input');
+ if(inputs.length) inputs[0].focus();
+}
+
+// توليد نسخة الزبون
+function generateOrder(){
+ const typeInputs = document.getElementsByClassName('type');
+ const qtyInputs = document.getElementsByClassName('qty');
+ const priceInputs = document.getElementsByClassName('price');
+ const loadInputs = document.getElementsByClassName('load');
+
+ if(typeInputs.length === 0){ alert('يجب إضافة منتج واحد على الأقل'); return; }
+
+ const customerName = document.getElementById('customerName').value.trim();
+ const phone1 = document.getElementById('phone1').value.trim();
+ const phone2 = document.getElementById('phone2').value.trim();
+ const address = document.getElementById('address').value.trim();
+ const delivery = document.getElementById('delivery').value.trim();
+ const exchange = document.getElementById('exchange').value.trim();
+ const notes = document.getElementById('notes').value.trim();
+
+ // تحقق الحقول الأساسية
+ if(!phone1 || !address || !delivery || !exchange){
+   alert("يرجى ملء جميع الحقول المطلوبة *");
+   return;
+ }
+ if(phone1.length !== 11){ alert("رقم الهاتف الأول يجب أن يكون 11 رقم"); return; }
+ if(phone2 && phone2.length !== 11){ alert("رقم الهاتف الثاني يجب أن يكون 11 رقم"); return; }
+ // تحقق توصيل خانة واحدة
+ if(!/^[0-9]$/.test(delivery)){
+   alert("مبلغ التوصيل يجب أن يكون رقم من خانة واحدة فقط (0-9)");
+   return;
+ }
+ // تحقق سعر الصرف صالح
+ const exchangeNum = parseFloat(exchange);
+ if(isNaN(exchangeNum) || exchangeNum <= 0){
+   alert("سعر الصرف غير صالح");
+   return;
+ }
+
+ // احسب وقت التثبيت الآن (وقت إنشاء الطلب)
+ const now = new Date();
+ const date = now.toLocaleDateString('ar-IQ');
+ const time = now.toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit', hour12: true });
+ const datetimeFormatted = `${date}  -  ${time}`; // مثل: ٢/١٢/٢٠٢٥  -  ٢:٥٥ م
+
+ // الحسابات لكل المنتجات
+ let totalPriceDollar = 0;
+ let html = "";
+ if(preview.src && preview.src.length) html += `<img src='${preview.src}'>`;
+
+ // أضف تاريخ/وقت التثبيت أولاً في الوصل
+ html += `<p><b>تاريخ ووقت الطلب:</b> ${datetimeFormatted}</p>`;
+
+ for(let i=0;i<typeInputs.length;i++){
+  const type = (typeInputs[i].value || "").trim();
+  const qty = parseFloat(qtyInputs[i].value);
+  const price = parseFloat(priceInputs[i].value);
+  const load = parseFloat(loadInputs[i].value);
+
+  if(!type || isNaN(qty) || qty <= 0 || isNaN(price) || price < 0 || isNaN(load) || load < 0){
+    alert("يجب ملء جميع الحقول لكل منتج بقيم صحيحة (العدد أكبر من 0، والسعر/التحميل أرقام صحيحة)");
+    return;
+  }
+
+  const priceDollar = (price * qty) + (load * qty);
+  totalPriceDollar += priceDollar;
+
+  html += `<div style="border-bottom:1px dashed #aaa; padding-bottom:5px; margin-bottom:5px;">`;
+  html += `<p><b>النوع:</b> ${escapeHtml(type)}</p>`;
+  html += `<p><b>العدد:</b> ${qty}</p>`;
+  html += `<p><b>السعر:</b> ${price}$ (سعر القطعة الواحدة)</p>`;
+  html += `<p><b>التحميل:</b> ${load}$ (تحميل القطعة الواحدة)</p>`;
+  html += `</div>`;
+ }
+
+ const totalPriceIQD = Math.round(totalPriceDollar * exchangeNum);
+ const finalPrice = totalPriceIQD + parseInt(delivery, 10);
+
+ html += `<p><b>الاسم:</b> ${escapeHtml(customerName)}</p>`;
+ html += `<p><b>هاتف 1:</b> ${escapeHtml(phone1)}</p>`;
+ html += `<p><b>هاتف 2:</b> ${escapeHtml(phone2)}</p>`;
+ html += `<p><b>العنوان:</b> ${escapeHtml(address)}</p>`;
+ html += `<p><b>السعر الكلي مع التوصيل:</b> ${finalPrice} ألف دينار</p>`;
+ if(notes) html += `<p><b>الملاحظات:</b> ${escapeHtml(notes)}</p>`;
+
+ document.getElementById('output').innerHTML = html;
+ document.getElementById('output').style.display = "block";
+ document.getElementById('copyBtn').style.display = "inline-block";
+ // عند كل إنشاء يمكنك -اختياريًا- تحديث التاريخ مرة أخرى أو تركها كما سجلت
+}
+
+// دالة بسيطة للهروب من نصوص HTML عند العرض
+function escapeHtml(text){
+  if(!text) return "";
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function copyToClipboard(){
+ const text = document.getElementById('output').innerText;
+ navigator.clipboard.writeText(text).then(()=>{ alert('تم نسخ الطلب'); }).catch(()=>{ alert('فشل النسخ — حاول من متصفح آخر'); });
+}
+</script>
+</body>
+</html>
