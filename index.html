@@ -3,208 +3,472 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>برنامج تثبيت الطلبات / dr.perfume18</title>
+<title>dr.perfume18 - برنامج الطلبات</title>
 <style>
- body { font-family: Arial; background:#f5f5f5; padding:20px; }
- .container { max-width:700px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
- label { font-weight:bold; margin-top:10px; display:block; }
- input, select, textarea { width:100%; padding:10px; margin-top:5px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box; }
- .btn { background:#444; color:#fff; padding:12px; margin-top:15px; width:100%; border:none; border-radius:5px; cursor:pointer; font-size:16px; }
- .btn:hover { background:#333; }
- .output { background:#eef; padding:15px; border-radius:10px; margin-top:20px; }
- .output img { max-width:100%; margin-top:10px; border-radius:5px; }
- .output p { font-size:16px; margin:5px 0; }
- .copyBtn { background:#0a84ff; margin-top:10px; color:#fff; border:none; padding:10px; border-radius:5px; cursor:pointer; }
- .productRow { border:1px solid #ccc; padding:10px; margin-top:10px; border-radius:5px; }
- .smallNote { font-size:13px; color:#666; }
+/* --- إعدادات عامة --- */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fa;
+  color: #333;
+  padding: 20px;
+  margin: 0;
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  background: #ffffff;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: 0.3s;
+}
+
+.container:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 15px;
+  max-width: 180px;
+}
+
+h2 {
+  text-align: center;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: 600;
+  display: block;
+  margin-top: 12px;
+  color: #555;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #0a84ff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(10,132,255,0.2);
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background: #0a84ff;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+
+.section {
+  display: none;
+}
+
+.output {
+  background: #e8f0fe;
+  padding: 15px 18px;
+  border-radius: 10px;
+  margin-top: 20px;
+  line-height: 1.6;
+  color: #1c1c1c;
+}
+
+.productRow {
+  border: 1px solid #d3d3d3;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.productRow button {
+  background: #ff6b6b;
+  color: white;
+  margin-top: 8px;
+}
+
+.productRow button:hover {
+  background: #e04e4e;
+}
+
+.smallNote {
+  font-size: 12px;
+  color: #888;
+}
+
+.centerText {
+  text-align: center;
+  font-size: 12px;
+  color: #888;
+  margin-top: 10px;
+}
+
+/* --- أزرار الحاسبة والإضافات --- */
+.addBtn {
+  background: #00c851;
+  color: white;
+}
+
+.addBtn:hover {
+  background: #007e33;
+}
+
+.resetBtn {
+  background: #ffbb33;
+  color: #fff;
+}
+
+.resetBtn:hover {
+  background: #e6a100;
+}
+
+.toast {
+  visibility: hidden;
+  min-width: 180px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 8px 12px;
+  position: fixed;
+  bottom: 40px;
+  right: 20px;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.5s ease, visibility 0.5s;
+}
+.toast.show {
+  visibility: visible;
+  opacity: 1;
+}
+
 </style>
+
 </head>
 <body>
-<div class="container">
-<h2>برنامج تثبيت الطلبات / dr.perfume18 </h2>
+<div id="toast" class="toast"></div>
 
-<label>صورة المنتج</label>
-<input type="file" id="productImage" accept="image/*">
-<img id="preview" style="display:none; max-width:100%; height:auto;" />
 
-<label>الاسم</label>
-<input id="customerName" placeholder="اسم الزبون (اختياري)">
+<div class="container" id="mainMenu">
+  <img src="logo.png" class="logo" alt="Logo">
+  <p class="centerText">Made by HKH | Version 3.2</p>
+  <h2>dr.perfume18</h2>
+  <button class="btn btn-primary" onclick="showSection('orderSection')">تثبيت الطلبات</button>
+  <button class="btn btn-primary" onclick="showSection('calcSection')">حاسبة الأسعار</button>
+</div>
 
-<div id="productsContainer"></div>
-<button class="btn" onclick="addProduct()">إضافة منتج</button>
+<!-- قسم تثبيت الطلبات -->
+<div class="container section" id="orderSection">
+ <img src="logo.png" class="logo" alt="Logo">
+  <button class="btn btn-secondary" onclick="showSection('mainMenu')">عودة للرئيسية</button>
+    <button class="btn btn-secondary" onclick="resetOrder()">تصفير الحقول</button>
+  
+  <h2>تثبيت الطلبات</h2>
 
-<label>هاتف 1 *</label>
-<input id="phone1" placeholder="رقم الهاتف 11 رقم" maxlength="11">
+  <label>صورة المنتج</label>
+  <input type="file" id="productImage" accept="image/*">
+  <img id="preview" style="display:none; max-width:100%; height:auto;" />
 
-<label>هاتف 2</label>
-<input id="phone2" placeholder="رقم إضافي (اختياري)" maxlength="11">
+  <label>الاسم</label>
+  <input id="customerName" placeholder="اسم الزبون (اختياري)">
 
-<label>العنوان *</label>
-<input id="address" placeholder="عنوان الزبون">
+  <div id="productsContainer"></div>
+  <button class="btn btn-primary" onclick="addProduct()">إضافة منتج</button>
 
-<label>مبلغ التوصيل * <span class="smallNote">(بدون اصفار)</span></label>
-<input id="delivery" placeholder="مثال: 3 أو ٣">
+  <label>هاتف 1 *</label>
+  <input id="phone1" placeholder="رقم الهاتف" maxlength="11">
 
-<label>سعر الصرف *</label>
-<input id="exchange" placeholder="مثال: 1.42 أو ١.٤٢">
+  <label>هاتف 2</label>
+  <input id="phone2" placeholder="رقم إضافي (اختياري)" maxlength="11">
 
-<label>ملاحظات</label>
-<textarea id="notes" rows="3" placeholder="ملاحظات إضافية (اختياري)" style="width:100%; margin-top:5px;"></textarea>
+  <label>العنوان *</label>
+  <input id="address" placeholder="عنوان الزبون">
 
-<button class="btn" onclick="generateOrder()">إنشاء نسخة الزبون</button>
+  <label>مبلغ التوصيل * <span class="smallNote">(0-9)</span></label>
+  <input id="delivery" placeholder="مثال 5 أو 8">
 
-<div id="output" class="output" style="display:none;"></div>
-<button id="copyBtn" class="copyBtn" style="display:none;" onclick="copyToClipboard()">نسخ الطلب</button>
+  <label>سعر الصرف *</label>
+  <input id="exchange" placeholder="مثال: 1.42">
 
+  <label>ملاحظات</label>
+  <textarea id="notes" rows="3" placeholder="ملاحظات إضافية (اختياري)"></textarea>
+
+  <button class="btn btn-primary" onclick="generateOrder()">إنشاء نسخة الزبون</button>
+
+  <p class="centerText">Made by HKH</p>
+  <div id="output" class="output" style="display:none;"></div>
+  <button id="copyBtn" class="btn btn-primary" style="display:none;" onclick="copyToClipboard()">نسخ الطلب</button>
+</div>
+
+<!-- قسم حاسبة الأسعار -->
+<div class="container section" id="calcSection">
+<img src="logo.png" class="logo" alt="Logo">
+  <button class="btn btn-secondary" onclick="showSection('mainMenu')">عودة للرئيسية</button>
+  <button class="btn btn-secondary" onclick="resetOrder()">تصفير الحقول</button>
+  <h2>حاسبة الأسعار</h2>
+
+  <div id="calcProductsContainer"></div>
+  <button class="btn btn-primary" onclick="addCalcProduct()">إضافة منتج</button>
+
+  <label>سعر الصرف *</label>
+  <input id="calcExchange" placeholder="مثال: 1.42">
+
+  <label>مبلغ التوصيل *<span class="smallNote">(0-9)</span></label>
+  <input id="calcDelivery" placeholder="مثال 5 أو 8">
+
+  <button class="btn btn-primary" onclick="calculate()">احسب السعر</button>
+
+
+  <div id="calcOutput" class="output" style="display:none;"></div>
+  <button id="calcCopyBtn" class="btn btn-primary" style="display:none;" onclick="copyText()">نسخ</button>
+   <p class="centerText">Made by HKH</p>
 </div>
 
 <script>
-// دالة تحويل الأرقام العربية إلى إنجليزية
+
+function showToast(msg){
+  const toast = document.getElementById('toast');
+  toast.innerText = msg;
+  toast.className = 'toast show';
+  setTimeout(()=>{ toast.className = 'toast'; }, 2000); // تظهر 2 ثانية
+}
+
+
+function resetOrder(){
+  document.getElementById('productsContainer').innerHTML = "";
+  document.getElementById('customerName').value = "";
+  document.getElementById('phone1').value = "";
+  document.getElementById('phone2').value = "";
+  document.getElementById('address').value = "";
+  document.getElementById('delivery').value = "";
+  document.getElementById('exchange').value = "";
+  document.getElementById('notes').value = "";
+  document.getElementById('preview').style.display = "none";
+  document.getElementById('preview').src = "";
+  document.getElementById('output').style.display = "none";
+  document.getElementById('copyBtn').style.display = "none";
+}
+// تحويل أرقام عربية → إنجليزية
 function convertArabicNumbers(input) {
-  if(!input) return input;
-  const arabicNumbers = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-  const englishNumbers = ['0','1','2','3','4','5','6','7','8','9'];
+  if (!input) return input;
+  const arabic = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  const english = ['0','1','2','3','4','5','6','7','8','9'];
   let output = input;
-  for (let i = 0; i < arabicNumbers.length; i++) {
-    output = output.replace(new RegExp(arabicNumbers[i], 'g'), englishNumbers[i]);
-  }
+  for (let i=0;i<10;i++) { output = output.replace(new RegExp(arabic[i], 'g'), english[i]); }
   return output;
 }
 
-// مرجع عناصر
+// التبديل بين الأقسام
+function showSection(sectionId) {
+  document.querySelectorAll('.section').forEach(s => s.style.display='none');
+  document.getElementById('mainMenu').style.display = sectionId==='mainMenu' ? 'block' : 'none';
+  if(sectionId!=='mainMenu') document.getElementById(sectionId).style.display='block';
+}
+
+// --- تثبيت الطلبات ---
 const preview = document.getElementById('preview');
 const productImage = document.getElementById('productImage');
-
-// Preview Image
 productImage.onchange = function(){
- const file = this.files[0];
- if(file){
-  const reader = new FileReader();
-  reader.onload = function(e){ preview.src = e.target.result; preview.style.display = "block"; preview.style.maxWidth = '100%'; preview.style.height = 'auto'; }
-  reader.readAsDataURL(file);
- } else {
-  preview.style.display = "none";
-  preview.src = "";
- }
+  const file = this.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      preview.src = e.target.result;
+      preview.style.display = "block";
+    }
+    reader.readAsDataURL(file);
+  } else { preview.style.display="none"; preview.src=""; }
 }
 
-// إضافة منتج
 function addProduct(){
- const container = document.getElementById('productsContainer');
- const div = document.createElement('div');
- div.className = 'productRow';
- div.innerHTML = `
-  <label>النوع *</label>
-  <input class="type" placeholder="نوع المنتج">
-  <label>العدد *</label>
-  <input class="qty" placeholder="عدد القطع">
-  <label>السعر ($) *</label>
-  <input class="price" placeholder="سعر القطعة بالدولار">
-  <label>التحميل ($)</label>
-  <input class="load" placeholder="التحميل لكل قطعة" value="4">
-  <button type="button" onclick="this.parentElement.remove()" style="margin-top:8px;">حذف المنتج</button>
- `;
- container.appendChild(div);
- const inputs = div.getElementsByTagName('input');
- if(inputs.length) inputs[0].focus();
+  const container = document.getElementById('productsContainer');
+  const div = document.createElement('div');
+  div.className='productRow';
+  div.innerHTML=`
+    <label>النوع *</label><input class="type" placeholder="نوع المنتج">
+    <label>العدد *</label><input class="qty" placeholder="عدد القطع">
+    <label>السعر ($) *</label><input class="price" placeholder="سعر القطعة بالدولار">
+    <label>التحميل ($)</label><input class="load" placeholder="التحميل لكل قطعة" value="4">
+    <button type="button" onclick="this.parentElement.remove()">حذف المنتج</button>
+  `;
+  container.appendChild(div);
 }
 
-// توليد نسخة الزبون
 function generateOrder(){
- const typeInputs = document.getElementsByClassName('type');
- const qtyInputs = document.getElementsByClassName('qty');
- const priceInputs = document.getElementsByClassName('price');
- const loadInputs = document.getElementsByClassName('load');
+  const typeInputs=document.getElementsByClassName('type');
+  const qtyInputs=document.getElementsByClassName('qty');
+  const priceInputs=document.getElementsByClassName('price');
+  const loadInputs=document.getElementsByClassName('load');
 
- if(typeInputs.length === 0){ alert('يجب إضافة منتج واحد على الأقل'); return; }
+  if(typeInputs.length===0){ showToast('أضف منتج واحد على الأقل'); return; }
 
- const customerName = document.getElementById('customerName').value.trim();
- const phone1 = document.getElementById('phone1').value.trim();
- const phone2 = document.getElementById('phone2').value.trim();
- const address = document.getElementById('address').value.trim();
- const delivery = convertArabicNumbers(document.getElementById('delivery').value.trim());
- const exchange = convertArabicNumbers(document.getElementById('exchange').value.trim());
- const notes = document.getElementById('notes').value.trim();
+  const customerName=document.getElementById('customerName').value.trim();
+  const phone1=document.getElementById('phone1').value.trim();
+  const phone2=document.getElementById('phone2').value.trim();
+  const address=document.getElementById('address').value.trim();
+  const delivery=convertArabicNumbers(document.getElementById('delivery').value.trim());
+  const exchange=convertArabicNumbers(document.getElementById('exchange').value.trim());
+  const notes=document.getElementById('notes').value.trim();
 
- // تحقق الحقول الأساسية
- if(!phone1 || !address || !delivery || !exchange){
-   alert("يرجى ملء جميع الحقول المطلوبة *");
-   return;
- }
- if(phone1.length !== 11){ alert("رقم الهاتف الأول يجب أن يكون 11 رقم"); return; }
- if(phone2 && phone2.length !== 11){ alert("رقم الهاتف الثاني يجب أن يكون 11 رقم"); return; }
- if(!/^[0-9]$/.test(delivery)){
-   alert("مبلغ التوصيل يجب أن يكون رقم من خانة واحدة فقط (0-9)");
-   return;
- }
- const exchangeNum = parseFloat(exchange);
- if(isNaN(exchangeNum) || exchangeNum <= 0){
-   alert("سعر الصرف غير صالح");
-   return;
- }
-
- const now = new Date();
- const date = now.toLocaleDateString('ar-IQ');
- const time = now.toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit', hour12: true });
- const datetimeFormatted = `${date}  -  ${time}`;
-
- let totalPriceDollar = 0;
- let html = "";
- if(preview.src && preview.src.length) html += `<img src='${preview.src}'>`;
- html += `<p><b>تاريخ ووقت الطلب:</b> ${datetimeFormatted}</p>`;
-
- for(let i=0;i<typeInputs.length;i++){
-  const type = (typeInputs[i].value || "").trim();
-  const qty = parseFloat(convertArabicNumbers(qtyInputs[i].value));
-  const price = parseFloat(convertArabicNumbers(priceInputs[i].value));
-  const load = parseFloat(convertArabicNumbers(loadInputs[i].value));
-
-  if(!type || isNaN(qty) || qty <= 0 || isNaN(price) || price < 0 || isNaN(load) || load < 0){
-    alert("يجب ملء جميع الحقول لكل منتج بقيم صحيحة (العدد أكبر من 0، والسعر/التحميل أرقام صحيحة)");
+  if(!phone1 || !address || !delivery || !exchange){
+    showToast("يرجى ملء جميع الحقول المطلوبة *");
     return;
   }
+  if(phone1.length!==11){ showToast("رقم الهاتف الأول يجب أن يكون 11 رقم"); return; }
+  if(phone2 && phone2.length!==11){ showToast("رقم الهاتف الثاني يجب أن يكون 11 رقم"); return; }
+  if(!/^[0-9]$/.test(delivery)){ showToast("مبلغ التوصيل يجب أن يكون رقم من خانة واحدة فقط"); return; }
+  const exchangeNum=parseFloat(exchange);
+  if(isNaN(exchangeNum) || exchangeNum<=0){ showToast("سعر الصرف غير صالح"); return; }
 
-  const priceDollar = (price * qty) + (load * qty);
-  totalPriceDollar += priceDollar;
+  const now=new Date();
+  const datetimeFormatted=`${now.toLocaleDateString('ar-IQ')} - ${now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit',hour12:true})}`;
 
-  html += `<div style="border-bottom:1px dashed #aaa; padding-bottom:5px; margin-bottom:5px;">`;
-  html += `<p><b>النوع:</b> ${escapeHtml(type)}</p>`;
-  html += `<p><b>العدد:</b> ${qty}</p>`;
-  html += `<p><b>السعر:</b> ${price}$ (سعر القطعة الواحدة)</p>`;
-  html += `<p><b>التحميل:</b> ${load}$ (تحميل القطعة الواحدة)</p>`;
-  html += `</div>`;
- }
+  let totalPriceDollar=0;
+  let html="";
+  if(preview.src && preview.src.length) html+=`<img src='${preview.src}'>`;
+  html+=`<p><b>تاريخ ووقت الطلب:</b> ${datetimeFormatted}</p>`;
 
- const totalPriceIQD = Math.round(totalPriceDollar * exchangeNum);
- const finalPrice = totalPriceIQD + parseInt(delivery, 10);
+  for(let i=0;i<typeInputs.length;i++){
+    const type=(typeInputs[i].value||"").trim();
+    const qty=parseFloat(convertArabicNumbers(qtyInputs[i].value));
+    const price=parseFloat(convertArabicNumbers(priceInputs[i].value));
+    const load=parseFloat(convertArabicNumbers(loadInputs[i].value));
 
- html += `<p><b>الاسم:</b> ${escapeHtml(customerName)}</p>`;
- html += `<p><b>هاتف 1:</b> ${escapeHtml(phone1)}</p>`;
- html += `<p><b>هاتف 2:</b> ${escapeHtml(phone2)}</p>`;
- html += `<p><b>العنوان:</b> ${escapeHtml(address)}</p>`;
- html += `<p><b>السعر الكلي مع التوصيل:</b> ${finalPrice} ألف دينار</p>`;
- if(notes) html += `<p><b>الملاحظات:</b> ${escapeHtml(notes)}</p>`;
+    if(!type || isNaN(qty)||qty<=0||isNaN(price)||price<0||isNaN(load)||load<0){
+      showToast("تأكد من القيم لكل منتج"); return;
+    }
 
- document.getElementById('output').innerHTML = html;
- document.getElementById('output').style.display = "block";
- document.getElementById('copyBtn').style.display = "inline-block";
-}
+    const priceDollar=(price*qty)+(load*qty);
+    totalPriceDollar+=priceDollar;
 
-// الهروب من HTML
-function escapeHtml(text){
-  if(!text) return "";
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    html+=`<div style="border-bottom:1px dashed #aaa; padding-bottom:5px; margin-bottom:5px;">
+      <p><b>النوع:</b> ${type}</p>
+      <p><b>العدد:</b> ${qty}</p>
+      <p><b>السعر:</b> ${price}$</p>
+      <p><b>التحميل:</b> ${load}$</p>
+    </div>`;
+  }
+
+  const totalPriceIQD=Math.round(totalPriceDollar*exchangeNum);
+  const finalPrice=totalPriceIQD+parseInt(delivery,10);
+
+  html+=`<p><b>الاسم:</b> ${customerName}</p>
+    <p><b>هاتف 1:</b> ${phone1}</p>
+    <p><b>هاتف 2:</b> ${phone2}</p>
+    <p><b>العنوان:</b> ${address}</p>
+    <p><b>السعر الكلي مع التوصيل:</b> ${finalPrice} ألف دينار</p>`;
+  if(notes) html+=`<p><b>الملاحظات:</b> ${notes}</p>`;
+
+  document.getElementById('output').innerHTML=html;
+  document.getElementById('output').style.display='block';
+  document.getElementById('copyBtn').style.display='inline-block';
 }
 
 function copyToClipboard(){
- const text = document.getElementById('output').innerText;
- navigator.clipboard.writeText(text).then(()=>{ alert('تم نسخ الطلب'); }).catch(()=>{ alert('فشل النسخ — حاول من متصفح آخر'); });
+  const text=document.getElementById('output').innerText;
+  navigator.clipboard.writeText(text).then(()=>showToast('تم النسخ')).catch(()=>showToast('فشل النسخ'));
+}
+
+// --- حاسبة الأسعار ---
+function addCalcProduct(){
+  const container=document.getElementById('calcProductsContainer');
+  const div=document.createElement('div');
+  div.className='productRow';
+  div.innerHTML=`
+    <label>السعر ($)</label><input class="price" placeholder="سعر القطعة">
+    <label>التحميل ($)</label><input class="load" placeholder="تحميل القطعة" value="4">
+    <label>العدد</label><input class="qty" placeholder="عدد القطع">
+    <button type="button" style="margin-top:8px;" onclick="this.parentElement.remove()">حذف المنتج</button>
+  `;
+  container.appendChild(div);
+}
+
+function calculate(){
+  let priceInputs=document.getElementsByClassName('price');
+  let loadInputs=document.getElementsByClassName('load');
+  let qtyInputs=document.getElementsByClassName('qty');
+
+  if(priceInputs.length===0){ showToast("أضف منتج واحد على الأقل"); return; }
+
+  let exchange=parseFloat(convertArabicNumbers(document.getElementById('calcExchange').value.trim()));
+  let delivery=parseFloat(convertArabicNumbers(document.getElementById('calcDelivery').value.trim()));
+  if(!/^[0-9]$/.test(delivery)){
+    showToast("مبلغ التوصيل يجب أن يكون رقم من خانة واحدة فقط");
+    return;
+}
+  if(isNaN(exchange)||exchange<=0){ showToast("سعر الصرف غير صالح"); return; }
+  if(isNaN(delivery)||delivery<0){ showToast("مبلغ التوصيل غير صالح"); return; }
+
+  let html="";
+  let totalDollar=0;
+
+  for(let i=0;i<priceInputs.length;i++){
+    let price=parseFloat(convertArabicNumbers(priceInputs[i].value));
+    let load=parseFloat(convertArabicNumbers(loadInputs[i].value));
+    let qty=parseFloat(convertArabicNumbers(qtyInputs[i].value));
+
+    if(isNaN(price)||isNaN(load)||isNaN(qty)||qty<=0){ showToast("تأكد من القيم لكل منتج"); return; }
+
+    let result=(price+load)*qty;
+    totalDollar+=result;
+    html+=`<p><b>منتج ${i+1}:</b> ${price}$ + ${load}$ × ${qty} = <b>${result}$</b></p>`;
+  }
+
+  let totalIQD=Math.round(totalDollar*exchange);
+  let finalPrice=totalIQD+delivery;
+
+  html+=`<hr>
+    <p><b>المجموع بالدولار:</b> ${totalDollar}$</p>
+    <p><b>المجموع بالدينار:</b> ${totalIQD} ألف</p>
+    <p><b>مع التوصيل:</b> ${finalPrice} ألف دينار</p>`;
+
+  document.getElementById('calcOutput').innerHTML=html;
+  document.getElementById('calcOutput').style.display='block';
+  document.getElementById('calcCopyBtn').style.display='inline-block';
+}
+
+function copyText(){
+  const text=document.getElementById('calcOutput').innerText;
+  navigator.clipboard.writeText(text).then(()=>showToast("تم النسخ")).catch(()=>showToast("فشل النسخ"));
+}
+
+function resetAll(){
+  document.getElementById('calcProductsContainer').innerHTML="";
+  document.getElementById('calcExchange').value="";
+  document.getElementById('calcDelivery').value="";
+  document.getElementById('calcOutput').style.display='none';
+  document.getElementById('calcCopyBtn').style.display='none';
 }
 </script>
+
 </body>
 </html>
