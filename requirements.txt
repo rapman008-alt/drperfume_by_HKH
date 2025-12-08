@@ -1,0 +1,6 @@
+Flask
+requests
+beautifulsoup4
+# optional extras:
+# google-cloud-vision
+# python-dotenv
